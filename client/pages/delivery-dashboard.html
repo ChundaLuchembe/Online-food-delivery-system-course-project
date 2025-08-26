@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delivery Dashboard - Food Delivery</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-yellow-200 to-yellow-50 min-h-screen flex flex-col">
+  <header class="bg-white shadow-sm py-4 mb-4">
+    <div class="container text-center position-relative">
+      <a href="home.html" class="btn btn-outline-warning position-absolute top-0 start-0 m-2">Home</a>
+      <h1 class="h4 fw-bold text-yellow-600">Delivery Dashboard</h1>
+      <p class="text-muted mb-0">Welcome, <span id="delivery-person-name">Delivery Personnel</span></p>
+    </div>
+  </header>
+  
+  <div class="container flex-grow-1">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card shadow">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0">My Assigned Orders</h5>
+          </div>
+          <div class="card-body">
+            <div id="assigned-orders">
+              <!-- Assigned orders will be rendered here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="text-center mt-4">
+      <button class="btn btn-outline-danger" onclick="deliveryLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Order Details Modal -->
+  <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="orderModalLabel">Order Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="order-details">
+          <!-- Order details will be rendered here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-success" onclick="markAsDelivered()">Mark as Delivered</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-white text-center py-3 mt-5 shadow-sm">
+    <span class="text-muted">&copy; 2024 Food Delivery | Delivery Portal</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentDeliveryPerson = null;
+    let currentOrderIndex = -1;
+
+    // Check if delivery person is logged in
+    const deliveryPersonId = localStorage.getItem('deliveryPersonId');
+    if (!deliveryPersonId) {
+      // Redirect to delivery login (you can create this later)
+      alert('Please log in as delivery personnel.');
+      window.location.href = 'home.html';
+    }
+
+    // Sample delivery personnel data (same as admin dashboard)
+    const deliveryPersonnel = [
+      { id: 1, name: 'John Mwamba', phone: '+260 955 123 456' },
+      { id: 2, name: 'Sarah Banda', phone: '+260 966 234 567' },
+      { id: 3, name: 'Michael Phiri', phone: '+260 977 345 678' },
+      { id: 4, name: 'Grace Lungu', phone: '+260 988 456 789' },
+      { id: 5, name: 'David Chisenga', phone: '+260 999 567 890' },
+      { id: 6, name: 'Mary Mwanza', phone: '+260 900 678 901' },
+      { id: 7, name: 'Peter Bwalya', phone: '+260 911 789 012' },
+      { id: 8, name: 'Alice Ngoma', phone: '+260 922 890 123' },
+      { id: 9, name: 'James Mulenga', phone: '+260 933 901 234' },
+      { id: 10, name: 'Patricia Mumba', phone: '+260 944 012 345' }
+    ];
+
+    // Set current delivery person
+    currentDeliveryPerson = deliveryPersonnel.find(p => p.id == deliveryPersonId);
+    if (currentDeliveryPerson) {
+      document.getElementById('delivery-person-name').textContent = currentDeliveryPerson.name;
+    }
+
+    function renderAssignedOrders() {
+      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      const assignedOrders = orders.filter(order => 
+        order.deliveryPerson && order.deliveryPerson.id == deliveryPersonId && order.status === 'Assigned'
+      );
+
+      const container = document.getElementById('assigned-orders');
+      
+      if (assignedOrders.length === 0) {
+        container.innerHTML = '<p class="text-center text-muted">No assigned orders at the moment.</p>';
+        return;
+      }
+
+      let html = `
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead class="table-success">
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Address</th>
+                <th>Total (ZMW)</th>
+                <th>Items</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      assignedOrders.forEach((order, idx) => {
+        html += `
+          <tr>
+            <td><strong>#${orders.indexOf(order) + 1}</strong></td>
+            <td>${order.customer || 'Guest'}</td>
+            <td>${order.deliveryAddress || 'Not provided'}</td>
+            <td><strong>ZMW ${order.total}</strong></td>
+            <td>
+              <button class="btn btn-sm btn-outline-info" onclick="viewOrderDetails(${orders.indexOf(order)})">
+                View Items (${order.items.length})
+              </button>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-success" onclick="markAsDelivered(${orders.indexOf(order)})">
+                Mark Delivered
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    }
+
+    function viewOrderDetails(orderIndex) {
+      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      const order = orders[orderIndex];
+      currentOrderIndex = orderIndex;
+
+      let html = `
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Customer Information</h6>
+            <p><strong>Customer:</strong> ${order.customer || 'Guest'}</p>
+            <p><strong>Address:</strong> ${order.deliveryAddress || 'Not provided'}</p>
+            <p><strong>Payment:</strong> ${order.paymentType}</p>
+            <p><strong>Status:</strong> <span class="badge bg-success">Assigned</span></p>
+          </div>
+          <div class="col-md-6">
+            <h6>Order Items</h6>
+            <ul class="list-group">
+      `;
+
+      order.items.forEach(item => {
+        html += `
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            ${item.name} (x${item.qty})
+            <span class="badge bg-primary rounded-pill">ZMW ${(item.price * item.qty).toFixed(2)}</span>
+          </li>
+        `;
+      });
+
+      html += `
+            </ul>
+            <div class="mt-3">
+              <h6><strong>Total: ZMW ${order.total}</strong></h6>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('order-details').innerHTML = html;
+      new bootstrap.Modal(document.getElementById('orderModal')).show();
+    }
+
+    function markAsDelivered(orderIndex = currentOrderIndex) {
+      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      if (orderIndex >= 0 && orderIndex < orders.length) {
+        if (confirm('Confirm that this order has been delivered?')) {
+          // Update order status
+          orders[orderIndex].status = 'Delivered';
+          orders[orderIndex].deliveredAt = new Date().toISOString();
+
+          // Update delivery personnel status to available
+          const savedStatus = JSON.parse(localStorage.getItem('deliveryPersonnelStatus')) || {};
+          savedStatus[deliveryPersonId] = 'Available';
+          localStorage.setItem('deliveryPersonnelStatus', JSON.stringify(savedStatus));
+
+          localStorage.setItem('orders', JSON.stringify(orders));
+          
+          bootstrap.Modal.getInstance(document.getElementById('orderModal')).hide();
+          alert('Order marked as delivered! You are now available for new assignments.');
+          
+          // Refresh the orders list
+          renderAssignedOrders();
+        }
+      }
+    }
+
+    function deliveryLogout() {
+      localStorage.removeItem('deliveryPersonId');
+      window.location.href = 'home.html';
+    }
+
+    // Initialize page
+    renderAssignedOrders();
+  </script>
+</body>
+</html> 

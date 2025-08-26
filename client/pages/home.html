@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Food Delivery - Home</title>
+  <!-- Bootstrap CSS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.7s cubic-bezier(.4,0,.2,1) both;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-yellow-200 to-yellow-50 min-h-screen">
+  <!-- Hero Section -->
+  <section class="py-5 bg-white shadow-sm mb-4">
+    <div class="container text-center">
+      <h1 class="display-6 fw-bold text-yellow-600 mb-2">Best Foods From The Comfort Of <span class="text-dark">Your Home.</span></h1>
+      <p class="lead mb-3">Hungry? You’re in the right place…</p>
+      <input type="text" id="search" class="form-control w-full max-w-xs mx-auto" placeholder="Search for food..." oninput="filterMenu()">
+    </div>
+  </section>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-light bg-white shadow-sm mb-2">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="navbar-brand text-yellow-600 fw-bold" href="home.html">Food Delivery</a>
+      <div class="d-flex gap-2 align-items-center">
+        <a href="login.html" class="btn btn-outline-warning btn-sm">Login</a>
+        <a href="register.html" class="btn btn-outline-warning btn-sm">Register</a>
+        <a href="logout.html" class="btn btn-outline-danger btn-sm">Logout</a>
+        <button class="btn btn-warning position-relative" onclick="showCart()">
+          Cart <span id="cart-count" class="badge bg-danger">0</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Menu Section -->
+  <div class="container my-3">
+    <div id="menu" class="flex flex-wrap gap-4 justify-center">
+      <!-- Food items will be rendered here -->
+    </div>
+  </div>
+
+  <!-- Cart Modal -->
+  <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cartModalLabel">Your Cart</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="cart-items">
+          <!-- Cart items will be rendered here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Shopping</button>
+          <button type="button" class="btn btn-warning" onclick="proceedToOrder()">Proceed to Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add this inside <body> after the cart modal -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="cartToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          Item added to cart!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white text-center py-3 mt-5 shadow-sm">
+    <span class="text-muted">&copy; 2025 Food Delivery</span>
+  </footer>
+
+  <!-- Bootstrap JS (for modal) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Sample menu data with Pinterest-style images
+    const menuItems = [
+      {
+        id: 1,
+        name: 'Chicken Shawarma',
+        price: 60,
+        image: '../components/Chicken Shawarma Recipe - Quick and Delicious.jpeg',
+        desc: 'Juicy chicken wrap with veggies.'
+      },
+      {
+        id: 2,
+        name: 'Veggie Pizza',
+        price: 90,
+        image: '../components/veggie pizza.jpeg',
+        desc: 'Loaded with fresh vegetables.'
+      },
+      {
+        id: 3,
+        name: 'Beef Burger',
+        price: 75,
+        image: '../components/Brie and Pear Grilled Cheese with Fig Jam on….jpeg',
+        desc: 'Classic beef burger with cheese.'
+      },
+      {
+        id: 4,
+        name: 'Fried Rice',
+        price: 50,
+        image: '../components/Better Than Takeout Fried Rice.jpeg',
+        desc: 'Delicious fried rice with veggies.'
+      },
+      {
+        id: 5,
+        name: 'Grilled Fish',
+        price: 85,
+        image: '../components/Grill Tilapia (African Style) - Immaculate Bites.jpeg',
+        desc: 'Perfectly grilled fish with lemon and herbs.'
+      },
+      {
+        id: 6,
+        name: 'Chicken Biryani',
+        price: 95,
+        image: '../components/Chicken Bryan Recipe That Tastes Like It\'s From….jpeg',
+        desc: 'Aromatic rice with spiced chicken.'
+      },
+      {
+        id: 7,
+        name: 'Tandoori Chicken',
+        price: 80,
+        image: '../components/fccf617e-e1b8-4baa-bbab-a4fc3b0e63b0.jpeg',
+        desc: 'Spicy tandoori chicken with salad.'
+      },
+      {
+        id: 8,
+        name: 'Pasta Alfredo',
+        price: 70,
+        image: '../components/d618691c-076f-4712-a071-dd306f982f80.jpeg',
+        desc: 'Creamy Alfredo pasta with mushrooms.'
+      },
+      {
+        id: 9,
+        name: 'Greek Salad',
+        price: 45,
+        image: '../components/Recipe_ How To Make The Perfect Greek Salad….jpeg',
+        desc: 'Fresh salad with feta cheese and olives.'
+      },
+      {
+        id: 10,
+        name: 'Samosa Plate',
+        price: 30,
+        image: '../components/cb1ca31c-0a14-42a8-b875-b3d91d9232fb.jpeg',
+        desc: 'Crispy samosas with chutney.'
+      },
+      {
+        id: 11,
+        name: 'Fruit Smoothie',
+        price: 25,
+        image: '../components/Feel your best with these 5 quick and easy detox….jpeg',
+        desc: 'Refreshing mixed fruit smoothie.'
+      },
+      {
+        id: 12,
+        name: 'Chocolate Cake',
+        price: 40,
+        image: '../components/9b7bc5b8-dfb6-444b-a6fd-a03739c64eca.jpeg',
+        desc: 'Rich chocolate cake slice.'
+      }
+    ];
+
+    let cart = [];
+    let filteredMenu = [...menuItems];
+
+    function renderMenu() {
+      const menuDiv = document.getElementById('menu');
+      menuDiv.innerHTML = '';
+      filteredMenu.forEach(item => {
+        menuDiv.innerHTML += `
+          <div class="w-full max-w-xs sm:w-72 flex-shrink-0 transition-transform duration-300 transform hover:scale-105 hover:shadow-2xl bg-white rounded-2xl shadow-md overflow-hidden animate-fadeIn flex flex-col mx-auto">
+            <img src="${item.image}" class="w-full h-44 object-cover" alt="${item.name}">
+            <div class="p-4 flex flex-col h-full">
+              <h5 class="text-yellow-600 font-bold text-lg mb-1">${item.name}</h5>
+              <p class="text-gray-600 mb-2">${item.desc}</p>
+              <div class="mt-auto flex flex-col gap-2">
+                <div class="font-bold text-right text-lg text-gray-800">ZMW ${item.price.toFixed(2)}</div>
+                <button class="btn btn-warning w-full" onclick="addToCart(${item.id})">
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function filterMenu() {
+      const query = document.getElementById('search').value.toLowerCase();
+      filteredMenu = menuItems.filter(item =>
+        item.name.toLowerCase().includes(query) ||
+        item.desc.toLowerCase().includes(query)
+      );
+      renderMenu();
+    }
+
+    function addToCart(id) {
+      const item = menuItems.find(i => i.id === id);
+      const cartItem = cart.find(i => i.id === id);
+      if (cartItem) {
+        cartItem.qty += 1;
+      } else {
+        cart.push({ ...item, qty: 1 });
+      }
+      updateCartCount();
+      // Show toast
+      const toastEl = document.getElementById('cartToast');
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    }
+
+    function updateCartCount() {
+      document.getElementById('cart-count').textContent = cart.reduce((sum, i) => sum + i.qty, 0);
+    }
+
+    function showCart() {
+      let html = '';
+      if (cart.length === 0) {
+        html = '<p>Your cart is empty.</p>';
+      } else {
+        html = '<ul class="list-group mb-3">';
+        cart.forEach(item => {
+          html += `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>${item.name} (x${item.qty})</span>
+              <span>ZMW ${(item.price * item.qty).toFixed(2)}</span>
+              <button class="btn btn-sm btn-danger ms-2" onclick="removeFromCart(${item.id})">&times;</button>
+            </li>
+          `;
+        });
+        html += '</ul>';
+        html += `<div class="fw-bold text-end">Total: ZMW ${cart.reduce((sum, i) => sum + i.price * i.qty, 0).toFixed(2)}</div>`;
+      }
+      document.getElementById('cart-items').innerHTML = html;
+      new bootstrap.Modal(document.getElementById('cartModal')).show();
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      updateCartCount();
+      showCart();
+    }
+
+    function proceedToOrder() {
+      if (localStorage.getItem('isLoggedIn') !== 'true') {
+        alert('You must be logged in to place an order.');
+        window.location.href = 'login.html';
+        return;
+      }
+      // Save cart to localStorage for order.html to access
+      localStorage.setItem('cart', JSON.stringify(cart));
+      window.location.href = 'order.html';
+    }
+
+    // Initial render
+    renderMenu();
+    updateCartCount();
+  </script>
+</body>
+</html>

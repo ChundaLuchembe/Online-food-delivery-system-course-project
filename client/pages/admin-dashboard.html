@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard - Food Delivery</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-yellow-200 to-yellow-50 min-h-screen flex flex-col">
+  <header class="bg-white shadow-sm py-4 mb-4">
+    <div class="container text-center position-relative">
+      <a href="home.html" class="btn btn-outline-warning position-absolute top-0 start-0 m-2">Home</a>
+      <h1 class="h4 fw-bold text-yellow-600">Admin Dashboard</h1>
+    </div>
+  </header>
+  <div class="container flex-grow-1">
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <h2 class="text-center text-xl font-bold mb-4 text-yellow-600">Order Management</h2>
+        <div class="card shadow">
+          <div class="card-header bg-warning text-white">
+            <h5 class="mb-0">Orders Overview</h5>
+          </div>
+          <div class="card-body">
+            <div id="orders-list">
+              <!-- Orders will be rendered here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="card shadow">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Menu Management</h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">Add, edit, or remove food items from your menu.</p>
+            <a href="menu-management.html" class="btn btn-info">
+              <i class="fas fa-utensils me-2"></i>Manage Menu
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-4">
+      <button class="btn btn-outline-danger" onclick="adminLogout()">Logout</button>
+    </div>
+  </div>
+  <footer class="bg-white text-center py-3 mt-5 shadow-sm">
+    <span class="text-muted">&copy; 2024 Food Delivery | Admin Portal</span>
+  </footer>
+
+  <!-- Order Details Modal -->
+  <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="orderModalLabel">Order Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="order-details">
+          <!-- Order details will be rendered here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-success" onclick="assignDelivery()">Assign Delivery</button>
+          <button type="button" class="btn btn-danger" onclick="declineOrder()">Decline Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Protect admin dashboard
+    if (localStorage.getItem('isAdmin') !== 'true') {
+      alert('Admin access only.');
+      window.location.href = 'admin-login.html';
+    }
+
+    let currentOrderIndex = -1;
+
+    // For demo: orders are stored in localStorage as 'orders'
+    function renderOrders() {
+      const orders = JSON.parse(localStorage.getItem('orders')) || [];
+      const ordersDiv = document.getElementById('orders-list');
+      
+      if (orders.length === 0) {
+        ordersDiv.innerHTML = '<p class="text-center text-muted">No orders have been placed yet.</p>';
+        return;
+      }
+
+      let html = `
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead class="table-warning">
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Total (ZMW)</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      orders.forEach((order, idx) => {
+        const statusClass = order.status === 'Pending' ? 'badge bg-warning' : 
+                           order.status === 'Assigned' ? 'badge bg-success' : 
+                           'badge bg-danger';
+        
+        html += `
+          <tr>
+            <td><strong>#${idx + 1}</strong></td>
+            <td>${order.customer || 'Guest'}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-info" onclick="viewOrderDetails(${idx})">
+                View Items (${order.items.length})
+              </button>
+            </td>
+            <td><strong>ZMW ${order.total}</strong></td>
+            <td>${order.paymentType}</td>
+            <td><span class="${statusClass}">${order.status}</span></td>
+            <td>
+              ${order.status === 'Pending' ? `
+                <button class="btn btn-sm btn-success me-1" onclick="assignDelivery(${idx})">
+                  Assign
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="declineOrder(${idx})">
+                  Decline
+                </button>
+              ` : `
+                  <span class="text-muted">${order.status}</span>
+                `}
+              </td>
+            </tr>
+          `;
+        });
+
+        html += '</tbody></table></div>';
+        ordersDiv.innerHTML = html;
+      }
+
+      function viewOrderDetails(orderIndex) {
+        const orders = JSON.parse(localStorage.getItem('orders')) || [];
+        const order = orders[orderIndex];
+        currentOrderIndex = orderIndex;
+
+        let html = `
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Customer Information</h6>
+              <p><strong>Customer:</strong> ${order.customer || 'Guest'}</p>
+              <p><strong>Payment:</strong> ${order.paymentType}</p>
+              <p><strong>Status:</strong> <span class="badge bg-${order.status === 'Pending' ? 'warning' : order.status === 'Assigned' ? 'success' : 'danger'}">${order.status}</span></p>
+            </div>
+            <div class="col-md-6">
+              <h6>Order Items</h6>
+              <ul class="list-group">
+        `;
+
+        order.items.forEach(item => {
+          html += `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              ${item.name} (x${item.qty})
+              <span class="badge bg-primary rounded-pill">ZMW ${(item.price * item.qty).toFixed(2)}</span>
+            </li>
+          `;
+        });
+
+        html += `
+              </ul>
+              <div class="mt-3">
+                <h6><strong>Total: ZMW ${order.total}</strong></h6>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('order-details').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('orderModal')).show();
+      }
+
+      function assignDelivery(orderIndex = currentOrderIndex) {
+        if (orderIndex >= 0) {
+          window.location.href = `delivery-assignment.html?orderId=${orderIndex}`;
+        }
+      }
+
+      function declineOrder(orderIndex = currentOrderIndex) {
+        const orders = JSON.parse(localStorage.getItem('orders')) || [];
+        if (orderIndex >= 0 && orderIndex < orders.length) {
+          if (confirm('Are you sure you want to decline this order?')) {
+            orders[orderIndex].status = 'Declined';
+            localStorage.setItem('orders', JSON.stringify(orders));
+            renderOrders();
+            bootstrap.Modal.getInstance(document.getElementById('orderModal')).hide();
+            alert('Order declined!');
+          }
+        }
+      }
+
+      function adminLogout() {
+        localStorage.removeItem('isAdmin');
+        window.location.href = 'admin-login.html';
+      }
+
+      // Initial render
+      renderOrders();
+    </script>
+  </body>
+  </html>

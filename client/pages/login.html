@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login - Food Delivery</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-yellow-200 to-yellow-50 min-h-screen flex flex-col justify-between">
+  <!-- Header -->
+  <header class="bg-white shadow-sm py-4 mb-4">
+    <div class="container text-center">
+      <img src="../components/restaurant-header.jpg" alt="Restaurant" class="img-fluid rounded-3 shadow mb-3" style="max-height: 120px; object-fit: cover; width: 100%; max-width: 400px;">
+      <h1 class="h4 fw-bold text-yellow-600">Food Delivery</h1>
+    </div>
+  </header>
+  <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+    <div class="position-absolute top-0 start-0 p-3 d-flex gap-2">
+      <a href="home.html" class="btn btn-outline-warning">Home</a>
+      <a href="admin-login.html" class="btn btn-outline-danger">Admin Login</a>
+    </div>
+    <div class="container max-w-md bg-white rounded-3xl shadow-lg p-5">
+      <h2 class="text-center text-2xl font-bold mb-4 text-yellow-600">Login</h2>
+      <form id="loginForm">
+        <div class="mb-3">
+          <label class="form-label">Email address</label>
+          <input type="email" class="form-control" name="email" required placeholder="Enter your email">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" name="password" required placeholder="Enter your password">
+        </div>
+        <button type="submit" class="btn btn-warning w-100">Login</button>
+        <div id="login-error" class="text-danger mt-2"></div>
+      </form>
+      <div class="text-center mt-3">
+        <a href="register.html" class="text-yellow-600 hover:underline">Don't have an account? Register</a>
+      </div>
+    </div>
+  </div>
+  <!-- Footer -->
+  <footer class="bg-white text-center py-3 mt-5 shadow-sm">
+    <span class="text-muted">&copy; 2024 Food Delivery</span>
+  </footer>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = this.email.value;
+      const password = this.password.value;
+      // Regular user login logic
+      if (email && password) {
+        alert('Login successful! Redirecting to home...');
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userEmail', email);
+        window.location.href = 'home.html';
+      } else {
+        document.getElementById('login-error').textContent = 'Invalid user credentials.';
+      }
+    });
+  </script>
+</body>
+</html>
