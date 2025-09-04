@@ -55,93 +55,41 @@
       window.location.href = 'admin-login.html';
     }
 
-    // Sample delivery personnel data
-    const deliveryPersonnel = [
-      {
-        id: 1,
-        name: 'John Mwamba',
-        phone: '+260 955 123 456',
-        status: 'Available',
-        rating: 4.8,
-        vehicle: 'Motorcycle'
-      },
-      {
-        id: 2,
-        name: 'Sarah Banda',
-        phone: '+260 966 234 567',
-        status: 'Available',
-        rating: 4.9,
-        vehicle: 'Car'
-      },
-      {
-        id: 3,
-        name: 'Michael Phiri',
-        phone: '+260 977 345 678',
-        status: 'On Delivery',
-        rating: 4.7,
-        vehicle: 'Motorcycle'
-      },
-      {
-        id: 4,
-        name: 'Grace Lungu',
-        phone: '+260 988 456 789',
-        status: 'Available',
-        rating: 4.6,
-        vehicle: 'Bicycle'
-      },
-      {
-        id: 5,
-        name: 'David Chisenga',
-        phone: '+260 999 567 890',
-        status: 'Available',
-        rating: 4.5,
-        vehicle: 'Motorcycle'
-      },
-      {
-        id: 6,
-        name: 'Mary Mwanza',
-        phone: '+260 900 678 901',
-        status: 'Available',
-        rating: 4.9,
-        vehicle: 'Car'
-      },
-      {
-        id: 7,
-        name: 'Peter Bwalya',
-        phone: '+260 911 789 012',
-        status: 'Available',
-        rating: 4.4,
-        vehicle: 'Bicycle'
-      },
-      {
-        id: 8,
-        name: 'Alice Ngoma',
-        phone: '+260 922 890 123',
-        status: 'Available',
-        rating: 4.8,
-        vehicle: 'Motorcycle'
-      },
-      {
-        id: 9,
-        name: 'James Mulenga',
-        phone: '+260 933 901 234',
-        status: 'Available',
-        rating: 4.6,
-        vehicle: 'Car'
-      },
-      {
-        id: 10,
-        name: 'Patricia Mumba',
-        phone: '+260 944 012 345',
-        status: 'Available',
-        rating: 4.7,
-        vehicle: 'Bicycle'
+    // Load delivery personnel from localStorage
+    function loadDeliveryPersonnel() {
+      let personnel = JSON.parse(localStorage.getItem('deliveryPersonnel')) || [];
+      
+      // If no personnel registered, show message
+      if (personnel.length === 0) {
+        return [];
       }
-    ];
+      
+      // Add current status to each person
+      const status = JSON.parse(localStorage.getItem('deliveryPersonnelStatus')) || {};
+      return personnel.map(person => ({
+        ...person,
+        status: status[person.id] || 'Available',
+        rating: 4.5 // Default rating, could be stored in personnel data later
+      }));
+    }
+
+    const deliveryPersonnel = loadDeliveryPersonnel();
 
     function renderDeliveryPersonnel() {
       const container = document.getElementById('delivery-personnel-list');
       let html = '';
+
+      if (deliveryPersonnel.length === 0) {
+        html = `
+          <div class="alert alert-warning">
+            <h6>No Delivery Personnel Registered</h6>
+            <p class="mb-2">You need to register delivery personnel before assigning orders.</p>
+            <a href="delivery-registration.html" class="btn btn-warning btn-sm">Register Delivery Personnel</a>
+          </div>
+        `;
+        container.innerHTML = html;
+        return;
+      }
 
       // Load delivery personnel status from localStorage
       const savedStatus = JSON.parse(localStorage.getItem('deliveryPersonnelStatus')) || {};

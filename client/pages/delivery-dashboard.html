@@ -68,28 +68,23 @@
     // Check if delivery person is logged in
     const deliveryPersonId = localStorage.getItem('deliveryPersonId');
     if (!deliveryPersonId) {
-      // Redirect to delivery login (you can create this later)
       alert('Please log in as delivery personnel.');
-      window.location.href = 'home.html';
+      window.location.href = 'delivery-login.html';
     }
 
-    // Sample delivery personnel data (same as admin dashboard)
-    const deliveryPersonnel = [
-      { id: 1, name: 'John Mwamba', phone: '+260 955 123 456' },
-      { id: 2, name: 'Sarah Banda', phone: '+260 966 234 567' },
-      { id: 3, name: 'Michael Phiri', phone: '+260 977 345 678' },
-      { id: 4, name: 'Grace Lungu', phone: '+260 988 456 789' },
-      { id: 5, name: 'David Chisenga', phone: '+260 999 567 890' },
-      { id: 6, name: 'Mary Mwanza', phone: '+260 900 678 901' },
-      { id: 7, name: 'Peter Bwalya', phone: '+260 911 789 012' },
-      { id: 8, name: 'Alice Ngoma', phone: '+260 922 890 123' },
-      { id: 9, name: 'James Mulenga', phone: '+260 933 901 234' },
-      { id: 10, name: 'Patricia Mumba', phone: '+260 944 012 345' }
-    ];
+    // Load delivery personnel from localStorage
+    function loadDeliveryPersonnel() {
+      return JSON.parse(localStorage.getItem('deliveryPersonnel')) || [];
+    }
+
+    const deliveryPersonnel = loadDeliveryPersonnel();
 
     // Set current delivery person
     currentDeliveryPerson = deliveryPersonnel.find(p => p.id == deliveryPersonId);
-    if (currentDeliveryPerson) {
+    if (!currentDeliveryPerson) {
+      alert('Delivery personnel not found. Please contact admin.');
+      window.location.href = 'delivery-login.html';
+    } else {
       document.getElementById('delivery-person-name').textContent = currentDeliveryPerson.name;
     }
 

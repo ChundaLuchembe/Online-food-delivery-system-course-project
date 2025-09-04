@@ -10,7 +10,7 @@
 <body class="bg-gradient-to-br from-yellow-200 to-yellow-50 min-h-screen d-flex align-items-center justify-content-center">
   <div class="container max-w-md bg-white rounded-3xl shadow-lg p-5 mt-5">
     <h2 class="text-center text-2xl font-bold mb-4 text-yellow-600">Logging Out...</h2>
-    <p class="text-center">You have been logged out. Redirecting to login page...</p>
+    <p class="text-center">You have been logged out. Redirecting to home page...</p>
   </div>
   <script>
     // Clear any session or localStorage data (simulate logout)
@@ -18,7 +18,7 @@
     localStorage.clear();
     sessionStorage.clear();
     setTimeout(function() {
-      window.location.href = 'login.html';
+      window.location.href = 'home.html';
     }, 2000);
   </script>
 </body>
